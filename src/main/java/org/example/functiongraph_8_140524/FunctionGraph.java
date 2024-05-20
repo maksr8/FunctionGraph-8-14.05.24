@@ -9,27 +9,34 @@ import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
-import javafx.scene.paint.Paint;
 import javafx.scene.text.Font;
 import javafx.stage.Stage;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartUtils;
 import org.jfree.chart.JFreeChart;
-import org.jfree.chart.block.LineBorder;
 import org.jfree.chart.fx.ChartViewer;
 import org.jfree.chart.plot.XYPlot;
-import org.jfree.chart.title.LegendTitle;
 import org.jfree.chart.title.TextTitle;
-import org.jfree.chart.ui.RectangleEdge;
 import org.jfree.data.xy.XYDataset;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
-
 import java.io.File;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
+/**
+ * JavaFX App for plotting and saving the graph of the parametric function:
+ * x = +-sqrt(|A*cos(Bt)*cos(t) + C|)
+ * y = +-sqrt(|A*cos(Bt)*sin(t) + C|)
+ * where A, B, C are parameters, t is a parameter from the range [from, to] with a step.
+ * The graph is saved as a PNG file.
+ * The app uses JFreeChart library for plotting the graph.
+ * The app is implemented using JavaFX.
+ * Created for educational practice task v8
+ *
+ * @author Розумєй Максим Віталійович
+ */
 public class FunctionGraph extends Application {
     private Spinner<Double> spinnerA;
     private Spinner<Double> spinnerB;
@@ -44,6 +51,10 @@ public class FunctionGraph extends Application {
         launch();
     }
 
+    /**
+     * Start the JavaFX application
+     * @param stage Stage
+     */
     @Override
     public void start(Stage stage) {
         Scene scene = getScene();
@@ -55,6 +66,10 @@ public class FunctionGraph extends Application {
         stage.show();
     }
 
+    /**
+     * Create the main scene of the application
+     * @return Scene
+     */
     private Scene getScene() {
         Label functionLabel = new Label("x = +-sqrt(|A*cos(Bt)*cos(t) + C|)\ny = +-sqrt(|A*cos(Bt)*sin(t) + C|)");
         functionLabel.setFont(Font.font("Times New Roman", 20.0));
@@ -91,7 +106,8 @@ public class FunctionGraph extends Application {
         spinnerStep = new Spinner<>(1, 10000.0, 10, 1);
         GridPane gridPaneStep = getGridPaneForLabel(labelStep, spinnerStep);
 
-        VBox vBox = new VBox(10, functionLabel, labelParam, gridPaneA, gridPaneB, gridPaneC, labelRange, gridPaneFrom, gridPaneTo, gridPaneStep);
+        VBox vBox = new VBox(10, functionLabel, labelParam, gridPaneA, gridPaneB, gridPaneC, labelRange,
+                gridPaneFrom, gridPaneTo, gridPaneStep);
         for (Node child : vBox.getChildren()) {
             VBox.setMargin(child, new Insets(0, 0, 0, 10));
         }
@@ -112,7 +128,8 @@ public class FunctionGraph extends Application {
         ScrollPane scrollPane = new ScrollPane(vBox);
         scrollPane.setFitToWidth(true);
         scrollPane.setFitToHeight(true);
-        scrollPane.setBorder(new Border(new BorderStroke(Color.BLACK, BorderStrokeStyle.SOLID, CornerRadii.EMPTY, BorderWidths.DEFAULT)));
+        scrollPane.setBorder(new Border(new BorderStroke(Color.BLACK, BorderStrokeStyle.SOLID, CornerRadii.EMPTY,
+                BorderWidths.DEFAULT)));
         
         createChart();
         ChartViewer chartViewer = new ChartViewer(chart);
@@ -126,6 +143,13 @@ public class FunctionGraph extends Application {
         return new Scene(borderPane1, 960, 700);
     }
 
+    /**
+     * Event handler for the Save button
+     * Save the chart as a PNG file
+     * Show an alert dialog with the result
+     * Uses JFreeChart ChartUtils to save the chart
+     * Uses Date to get the current date and time for the file name
+     */
     private void buttonClickedEvent() {
         System.out.println("A = " + spinnerA.getValue());
         System.out.println("B = " + spinnerB.getValue());
@@ -165,13 +189,23 @@ public class FunctionGraph extends Application {
         }
     }
 
+    /**
+     * Create the line chart with the default dataset and author subtitle
+     */
     private void createChart() {
         XYSeries series = new XYSeries("Example Series");
         XYDataset dataset = new XYSeriesCollection(series);
         chart = ChartFactory.createXYLineChart("Example Chart", "X-Axis", "Y-Axis", dataset);
-        chart.addSubtitle(new TextTitle("Author: Maksym Rozumiei", new java.awt.Font("Arial", java.awt.Font.PLAIN, 12)));
+        chart.addSubtitle(new TextTitle("Author: Maksym Rozumiei", new java.awt.Font("Arial",
+                java.awt.Font.PLAIN, 12)));
     }
 
+    /**
+     * Create a GridPane with a Label and a Spinner
+     * @param label Label
+     * @param spinner Spinner
+     * @return GridPane
+     */
     private GridPane getGridPaneForLabel(Label label, Spinner<Double> spinner) {
         label.setFont(Font.font("Times New Roman", 15.0));
         GridPane.setHalignment(label, HPos.CENTER);
@@ -190,12 +224,21 @@ public class FunctionGraph extends Application {
         return gridPane;
     }
 
+    /**
+     * Event handler for the Spinner value change
+     * Rebuild the chart with the new parameters
+     * Disable the Save button while the chart is being built
+     */
     private void parametersChangedEvent() {
         saveButton.setDisable(true);
         buildChart();
         saveButton.setDisable(false);
     }
 
+    /**
+     * Build the chart with the current parameters
+     * Set the title of the chart with the current parameters
+     */
     private void buildChart() {
         double a = spinnerA.getValue();
         double b = spinnerB.getValue();
