@@ -5,7 +5,7 @@ module org.example.functiongraph_8_140524 {
     requires org.controlsfx.controls;
     requires org.kordamp.bootstrapfx.core;
     requires org.jfree.jfreechart;
-    requires jfreechart.fx;
+    requires org.jfree.chart.fx;
 
     opens org.example.functiongraph_8_140524 to javafx.fxml;
     exports org.example.functiongraph_8_140524;

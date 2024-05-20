@@ -15,6 +15,7 @@ import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartUtils;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.fx.ChartViewer;
+import org.jfree.chart.plot.XYPlot;
 import org.jfree.data.xy.XYDataset;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
@@ -45,6 +46,7 @@ public class FunctionGraph extends Application {
         stage.setScene(scene);
         stage.setMinHeight(200);
         stage.setMinWidth(500);
+        parametersChangedEvent();
         stage.show();
     }
 
@@ -62,7 +64,7 @@ public class FunctionGraph extends Application {
         GridPane gridPaneA = getGridPaneForLabel(labelA, spinnerA);
 
         Label labelB = new Label("B");
-        spinnerB = new Spinner<>(-100.0, 100.0, 2.0, 0.1);
+        spinnerB = new Spinner<>(-100.0, 100.0, 2.0, 0.01);
         GridPane gridPaneB = getGridPaneForLabel(labelB, spinnerB);
 
         Label labelC = new Label("C");
@@ -80,8 +82,8 @@ public class FunctionGraph extends Application {
         spinnerTo = new Spinner<>(-100.0, 100.0, 5.0, 0.1);
         GridPane gridPaneTo = getGridPaneForLabel(labelTo, spinnerTo);
 
-        Label labelStep = new Label("Step");
-        spinnerStep = new Spinner<>(0.1, 10.0, 0.1, 0.1);
+        Label labelStep = new Label("Step/1000");
+        spinnerStep = new Spinner<>(1, 10000.0, 10, 1);
         GridPane gridPaneStep = getGridPaneForLabel(labelStep, spinnerStep);
 
         VBox vBox = new VBox(10, functionLabel, labelParam, gridPaneA, gridPaneB, gridPaneC, labelRange, gridPaneFrom, gridPaneTo, gridPaneStep);
@@ -146,7 +148,7 @@ public class FunctionGraph extends Application {
     private void createChart() {
         XYSeries series = new XYSeries("Example Series");
         series.add(1.0, 1.0);
-        series.add(2.0, 2.0);
+        series.add(-2.0, 2.0);
         series.add(3.0, 3.0);
         XYDataset dataset = new XYSeriesCollection(series);
         chart = ChartFactory.createXYLineChart("Example Chart", "X-Axis", "Y-Axis", dataset);
@@ -178,6 +180,32 @@ public class FunctionGraph extends Application {
     }
 
     private void buildChart() {
+        double a = spinnerA.getValue();
+        double b = spinnerB.getValue();
+        double c = spinnerC.getValue();
+        double from = spinnerFrom.getValue();
+        double to = spinnerTo.getValue();
+        double step = spinnerStep.getValue()/1000.0;
+
+        XYSeries series1 = new XYSeries("Generated Series 1", false, true);
+        XYSeries series2 = new XYSeries("Generated Series 2", false, true);
+        XYSeries series3 = new XYSeries("Generated Series 3", false, true);
+        XYSeries series4 = new XYSeries("Generated Series 4", false, true);
+        for (double t = from; t <= to; t += step) {
+            double x = Math.sqrt(Math.abs(a * Math.cos(b * t) * Math.cos(t) + c));
+            double y = Math.sqrt(Math.abs(a * Math.cos(b * t) * Math.sin(t) + c));
+            series1.add(x, y);
+            series2.add(-x, y);
+            series3.add(x, -y);
+            series4.add(-x, -y);
+        }
+
+        XYDataset dataset = new XYSeriesCollection(series1);
+        XYPlot plot = (XYPlot) chart.getPlot();
+        plot.setDataset(0, dataset);
+        plot.setDataset(1, new XYSeriesCollection(series2));
+        plot.setDataset(2, new XYSeriesCollection(series3));
+        plot.setDataset(3, new XYSeriesCollection(series4));
     }
 
     private void setChartText() {
