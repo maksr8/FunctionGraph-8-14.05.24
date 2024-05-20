@@ -9,13 +9,18 @@ import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
+import javafx.scene.paint.Paint;
 import javafx.scene.text.Font;
 import javafx.stage.Stage;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartUtils;
 import org.jfree.chart.JFreeChart;
+import org.jfree.chart.block.LineBorder;
 import org.jfree.chart.fx.ChartViewer;
 import org.jfree.chart.plot.XYPlot;
+import org.jfree.chart.title.LegendTitle;
+import org.jfree.chart.title.TextTitle;
+import org.jfree.chart.ui.RectangleEdge;
 import org.jfree.data.xy.XYDataset;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
@@ -51,7 +56,7 @@ public class FunctionGraph extends Application {
     }
 
     private Scene getScene() {
-        Label functionLabel = new Label("x = +-sqrt(A*cos(Bt)*cos(t) + C)\ny = +-sqrt(A*cos(Bt)*sin(t) + C)");
+        Label functionLabel = new Label("x = +-sqrt(|A*cos(Bt)*cos(t) + C|)\ny = +-sqrt(|A*cos(Bt)*sin(t) + C|)");
         functionLabel.setFont(Font.font("Times New Roman", 20.0));
         functionLabel.setWrapText(true);
         functionLabel.setMaxSize(Label.USE_PREF_SIZE, Label.USE_PREF_SIZE);
@@ -118,7 +123,7 @@ public class FunctionGraph extends Application {
         borderPane1.setRight(scrollPane);
         borderPane1.setBackground(Background.fill(new Color(0.6, 0.8, 0.6, 0.5)));
 
-        return new Scene(borderPane1, 1000, 700);
+        return new Scene(borderPane1, 960, 700);
     }
 
     private void buttonClickedEvent() {
@@ -135,23 +140,36 @@ public class FunctionGraph extends Application {
             String currentDateTime = dateFormat.format(currentDate);
             File outputFile = new File("graph8_"+ currentDateTime + ".png");
             if(outputFile.createNewFile()){
-                ChartUtils.saveChartAsPNG(outputFile, chart, 800, 600);
+                ChartUtils.saveChartAsPNG(outputFile, chart, 960, 1000);
                 System.out.println("Chart saved to " + outputFile.getAbsolutePath());
+                Alert alert = new Alert(Alert.AlertType.INFORMATION);
+                alert.setTitle("Information Dialog");
+                alert.setHeaderText("Success!");
+                alert.setContentText("Chart saved to " + outputFile.getAbsolutePath());
+                alert.showAndWait();
             } else {
                 System.out.println("File already exists.");
+                Alert alert = new Alert(Alert.AlertType.ERROR);
+                alert.setTitle("Error Dialog");
+                alert.setHeaderText("Error!");
+                alert.setContentText("File already exists.");
+                alert.showAndWait();
             }
         } catch (IOException e) {
             e.printStackTrace();
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setTitle("Error Dialog");
+            alert.setHeaderText("Error!");
+            alert.setContentText(e.getMessage());
+            alert.showAndWait();
         }
     }
 
     private void createChart() {
         XYSeries series = new XYSeries("Example Series");
-        series.add(1.0, 1.0);
-        series.add(-2.0, 2.0);
-        series.add(3.0, 3.0);
         XYDataset dataset = new XYSeriesCollection(series);
         chart = ChartFactory.createXYLineChart("Example Chart", "X-Axis", "Y-Axis", dataset);
+        chart.addSubtitle(new TextTitle("Author: Maksym Rozumiei", new java.awt.Font("Arial", java.awt.Font.PLAIN, 12)));
     }
 
     private GridPane getGridPaneForLabel(Label label, Spinner<Double> spinner) {
@@ -174,7 +192,6 @@ public class FunctionGraph extends Application {
 
     private void parametersChangedEvent() {
         saveButton.setDisable(true);
-        setChartText();
         buildChart();
         saveButton.setDisable(false);
     }
@@ -186,6 +203,10 @@ public class FunctionGraph extends Application {
         double from = spinnerFrom.getValue();
         double to = spinnerTo.getValue();
         double step = spinnerStep.getValue()/1000.0;
+
+        chart.setTitle("x = +-sqrt(|"+a+"*cos("+b+"t)*cos(t) + ("+c+")|)\n" +
+                "y = +-sqrt(|"+a+"*cos("+b+"t)*sin(t) + ("+c+")|)\n" +
+                "t from " + from + " to " + to + " with step " + step);
 
         XYSeries series1 = new XYSeries("Generated Series 1", false, true);
         XYSeries series2 = new XYSeries("Generated Series 2", false, true);
@@ -206,9 +227,5 @@ public class FunctionGraph extends Application {
         plot.setDataset(1, new XYSeriesCollection(series2));
         plot.setDataset(2, new XYSeriesCollection(series3));
         plot.setDataset(3, new XYSeriesCollection(series4));
-    }
-
-    private void setChartText() {
-        chart.setTitle("This is some text information");
     }
 }
